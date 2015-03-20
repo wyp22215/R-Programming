@@ -1,62 +1,92 @@
-Introduction
+The following code demonstrates how to use the makeCacheMatrixMean.R script.
 
-This second programming assignment will require you to write an R function that is able to cache potentially time-consuming computations. For example, taking the mean of a numeric vector is typically a fast operation. However, for a very long vector, it may take too long to compute the mean, especially if it has to be computed repeatedly (e.g. in a loop). If the contents of a vector are not changing, it may make sense to cache the value of the mean so that when we need it again, it can be looked up in the cache rather than recomputed. In this Programming Assignment you will take advantage of the scoping rules of the R language and how they can be manipulated to preserve state inside of an R object.
+Lines starting with # are simple comments, lines starting with #> are things printed in the output.
 
-Example: Caching the Mean of a Vector
+# read the R script
+# change the directory to the directory of the file you saved
+source("makeCacheMatrixMean.R")
 
-In this example we introduce the <<- operator which can be used to assign a value to an object in an environment that is different from the current environment. Below are two functions that are used to create a special object that stores a numeric vector and caches its mean.
+# create a *square* matrix (because `solve` only handles square matrices)
+# create the matrix during the call of makeCacheMatrix()
+a <- makeCacheMatrix( matrix(c(1,2,12,13), nrow = 2, ncol = 2) );
 
-The first function, makeVector creates a special "vector", which is really a list containing a function to
+summary(a);
+#>              Length Class  Mode    
+#> setMatrix    1      -none- function
+#> getMatrix    1      -none- function
+#> cacheInverse 1      -none- function
+#> getInverse   1      -none- function
 
-set the value of the vector
-get the value of the vector
-set the value of the mean
-get the value of the mean
-makeVector <- function(x = numeric()) {
-        m <- NULL
-        set <- function(y) {
-                x <<- y
-                m <<- NULL
-        }
-        get <- function() x
-        setmean <- function(mean) m <<- mean
-        getmean <- function() m
-        list(set = set, get = get,
-             setmean = setmean,
-             getmean = getmean)
-}
-The following function calculates the mean of the special "vector" created with the above function. However, it first checks to see if the mean has already been calculated. If so, it gets the mean from the cache and skips the computation. Otherwise, it calculates the mean of the data and sets the value of the mean in the cache via the setmean function.
+a$getMatrix();
+#>      [,1] [,2]
+#> [1,]    1   12
+#> [2,]    2   13
 
-cachemean <- function(x, ...) {
-        m <- x$getmean()
-        if(!is.null(m)) {
-                message("getting cached data")
-                return(m)
-        }
-        data <- x$get()
-        m <- mean(data, ...)
-        x$setmean(m)
-        m
-}
-Assignment: Caching the Inverse of a Matrix
+cacheSolve(a)
+#> [,1]        [,2]
+#> [1,] -1.1818182  1.09090909
+#> [2,]  0.1818182 -0.09090909
 
-Matrix inversion is usually a costly computation and there may be some benefit to caching the inverse of a matrix rather than computing it repeatedly (there are also alternatives to matrix inversion that we will not discuss here). Your assignment is to write a pair of functions that cache the inverse of a matrix.
+# the 2nd time we run the function,we get the cached value
+cacheSolve(a)
+#> getting cached data
+#> [,1]        [,2]
+#> [1,] -1.1818182  1.09090909
+#> [2,]  0.1818182 -0.09090909
+Alternatively, the matrix can be created after calling a makeCacheMatrix without arguments.
 
-Write the following functions:
+# read the R script
+# replace the "path/to/file" with the directory you save the file into
+# or you can read the file directly from the web
+source("path/to/file/assessment3.R")
 
-makeCacheMatrix: This function creates a special "matrix" object that can cache its inverse.
-cacheSolve: This function computes the inverse of the special "matrix" returned by makeCacheMatrix above. If the inverse has already been calculated (and the matrix has not changed), then cacheSolve should retrieve the inverse from the cache.
-Computing the inverse of a square matrix can be done with the solve function in R. For example, if X is a square invertible matrix, then solve(X) returns its inverse.
+# call makeCacheMatrix without arguments
+a <- makeCacheMatrix();
+summary(a);
+#>              Length Class  Mode    
+#> setMatrix    1      -none- function
+#> getMatrix    1      -none- function
+#> cacheInverse 1      -none- function
+#> getInverse   1      -none- function
 
-For this assignment, assume that the matrix supplied is always invertible.
+# create a square matrix (reason `solve` only handles square matrices )
+#if the matrix is not square,it will prompt like this :
 
-In order to complete this assignment, you must do the following:
+> a<-makeCacheMatrix()
+> summary(a)
+             Length Class  Mode    
+setMatrix    1      -none- function
+getMatrix    1      -none- function
+cacheInverse 1      -none- function
+getInverse   1      -none- function
+> a$setMatrix(matrix(c(1,2,3,4,5,6),nrow=3,ncol=2))
+> a$getMatrix()
+     [,1] [,2]
+[1,]    1    4
+[2,]    2    5
+[3,]    3    6
+> cacheSolve(a)
+#"Error in solve.default(data) : 'a' (3 x 2) must be square"
 
-Fork the GitHub repository containing the stub R files at https://github.com/rdpeng/ProgrammingAssignment2 to create a copy under your own account.
-Clone your forked GitHub repository to your computer so that you can edit the files locally on your own machine.
-Edit the R file contained in the git repository and place your solution in that file (please do not rename the file).
-Commit your completed R file into YOUR git repository and push your git branch to the GitHub repository under your account.
-Submit to Coursera the URL to your GitHub repository that contains the completed R code for the assignment.
-Grading
+a$setMatrix( matrix(c(1,2,12,13), nrow = 2, ncol = 2) );
+a$getMatrix();
+#>      [,1] [,2]
+#> [1,]    1   12
+#> [2,]    2   13
 
-This assignment will be graded via peer assessment.
+cacheSolve(a)
+#> [,1]        [,2]
+#> [1,] -1.1818182  1.09090909
+#> [2,]  0.1818182 -0.09090909
+
+# the 2nd time we run the function, we get the cached value
+cacheSolve(a)
+#> getting cached data
+#> [,1]        [,2]
+#> [1,] -1.1818182  1.09090909
+#> [2,]  0.1818182 -0.09090909
+
+
+
+
+
